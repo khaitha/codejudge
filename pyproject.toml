@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codejudge"
+version = "0.1.0"
+description = "A preference-ranking harness for evaluating AI-generated code."
+readme = "README.md"
+requires-python = ">=3.9"
