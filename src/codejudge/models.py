@@ -47,3 +47,57 @@ class ScoreWeights:
         )
 
 
+@dataclass(frozen=True)
+class Task:
+    """A coding problem plus the tests and scoring policy used to judge it."""
+
+    id: str
+    prompt: str
+    entrypoint: str
+    cases: List[TestCase]
+    time_limit_s: float = 2.0
+    weights: ScoreWeights = field(default_factory=ScoreWeights)
+
+
+@dataclass(frozen=True)
+class Candidate:
+    """One AI-generated (or human) solution to a :class:`Task`."""
+
+    id: str
+    code: str
+    source_path: Optional[str] = None
+
+
+@dataclass
+class CaseResult:
+    """Outcome of running a single :class:`TestCase` against a candidate."""
+
+    name: str
+    passed: bool
+    runtime_ms: float
+    got: str = ""
+    error: Optional[str] = None
+
+
+@dataclass
+class RunResult:
+    """All case outcomes for one candidate, plus any fatal-crash signal."""
+
+    candidate_id: str
+    case_results: List[CaseResult] = field(default_factory=list)
+    crashed: bool = False
+    error: Optional[str] = None
+
+    @property
+    def n_total(self) -> int:
+        return len(self.case_results)
+
+    @property
+    def n_passed(self) -> int:
+        return sum(1 for c in self.case_results if c.passed)
+
+    @property
+    def passed_runtime_ms(self) -> float:
+        """Total wall-clock over the cases that passed (used for perf scoring)."""
+        return sum(c.runtime_ms for c in self.case_results if c.passed)
+
