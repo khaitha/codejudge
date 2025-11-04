@@ -101,3 +101,54 @@ class RunResult:
         """Total wall-clock over the cases that passed (used for perf scoring)."""
         return sum(c.runtime_ms for c in self.case_results if c.passed)
 
+
+@dataclass
+class QualityMetrics:
+    """Static (no-execution) source-quality signals for a candidate."""
+
+    loc: int
+    cyclomatic: int
+    max_function_complexity: int
+    has_docstring: bool
+    syntax_ok: bool
+    score: float  # normalized to 0..1
+
+
+@dataclass
+class ScoreBreakdown:
+    """The three dimension scores plus their weighted aggregate (all 0..1)."""
+
+    correctness: float
+    performance: float
+    quality: float
+    aggregate: float
+
+
+@dataclass
+class CandidateReport:
+    """Everything known about one candidate after evaluation."""
+
+    candidate_id: str
+    run: RunResult
+    quality: QualityMetrics
+    scores: ScoreBreakdown
+    rank: int = 0
+
+
+@dataclass
+class Preference:
+    """A pairwise preference judgment — the unit of RLHF-style training data."""
+
+    winner: str
+    loser: str
+    margin: float
+    reason: str
+
+
+@dataclass
+class EvaluationReport:
+    """The full result of evaluating a task: ranked reports + preferences."""
+
+    task_id: str
+    reports: List[CandidateReport]
+    preferences: List[Preference] = field(default_factory=list)
