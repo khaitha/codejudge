@@ -8,3 +8,13 @@ version = "0.1.0"
 description = "A preference-ranking harness for evaluating AI-generated code."
 readme = "README.md"
 requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Khai Tha" }]
+keywords = ["llm", "rlhf", "evaluation", "code", "ranking", "ai", "benchmark"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Quality Assurance",
+    "Intended Audience :: Developers",
+]
+dependencies = ["PyYAML>=5.4"]
