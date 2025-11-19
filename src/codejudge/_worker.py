@@ -43,3 +43,52 @@ def _evaluate(spec: dict) -> dict:
     except Exception:
         return {"fatal": traceback.format_exc(limit=3)}
 
+    fn = namespace.get(entrypoint)
+    if not callable(fn):
+        return {"fatal": f"entrypoint {entrypoint!r} is not defined or not callable"}
+
+    results = []
+    for case in cases:
+        args = case.get("args", [])
+        kwargs = case.get("kwargs", {})
+        expected = case.get("expected")
+        start = time.perf_counter()
+        try:
+            got = fn(*args, **kwargs)
+            runtime_ms = (time.perf_counter() - start) * 1000.0
+            results.append(
+                {
+                    "name": case["name"],
+                    "passed": got == expected,
+                    "runtime_ms": runtime_ms,
+                    "got": _safe_repr(got),
+                }
+            )
+        except Exception:
+            runtime_ms = (time.perf_counter() - start) * 1000.0
+            last_line = traceback.format_exc(limit=2).strip().splitlines()[-1]
+            results.append(
+                {
+                    "name": case["name"],
+                    "passed": False,
+                    "runtime_ms": runtime_ms,
+                    "error": last_line,
+                }
+            )
+    return {"results": results}
+
+
+def main() -> None:
+    spec = json.load(sys.stdin)
+    real_stdout = sys.stdout
+    # Quarantine anything the candidate prints so it can't pollute our payload.
+    sys.stdout = io.StringIO()
+    try:
+        payload = _evaluate(spec)
+    finally:
+        sys.stdout = real_stdout
+    json.dump(payload, real_stdout)
+
+
+if __name__ == "__main__":
+    main()
