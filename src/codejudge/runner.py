@@ -31,3 +31,35 @@ def run_candidate(
     crash with every case failing.
     """
     spec = {
+        "code": candidate.code,
+        "entrypoint": task.entrypoint,
+        "cases": [
+            {"name": c.name, "args": c.args, "kwargs": c.kwargs, "expected": c.expected}
+            for c in task.cases
+        ],
+    }
+    # Overall budget: per-case limit times case count, plus startup slack.
+    timeout = max(1.0, task.time_limit_s * max(1, len(task.cases)) + 0.5)
+
+    try:
+        proc = subprocess.run(
+            [python_exe, "-I", _WORKER],
+            input=json.dumps(spec),
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired:
+        return RunResult(
+            candidate_id=candidate.id,
+            case_results=_all_failed(task, "timeout", runtime_ms=timeout * 1000.0),
+            crashed=True,
+            error=f"timed out after {timeout:.1f}s",
+        )
+
+    if not proc.stdout.strip():
+        return RunResult(
+            candidate_id=candidate.id,
+            case_results=_all_failed(task, "worker produced no output"),
+            crashed=True,
+            error=(proc.stderr.strip() or "worker exited without output")[-500:],
