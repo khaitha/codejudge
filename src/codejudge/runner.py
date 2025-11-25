@@ -63,3 +63,35 @@ def run_candidate(
             case_results=_all_failed(task, "worker produced no output"),
             crashed=True,
             error=(proc.stderr.strip() or "worker exited without output")[-500:],
+        )
+
+    try:
+        payload = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return RunResult(
+            candidate_id=candidate.id,
+            case_results=_all_failed(task, "unparseable worker output"),
+            crashed=True,
+            error=(proc.stdout or proc.stderr)[-500:],
+        )
+
+    if "fatal" in payload:
+        # Code failed to compile/import, or the entrypoint was missing.
+        return RunResult(
+            candidate_id=candidate.id,
+            case_results=_all_failed(task, "import/compile error"),
+            crashed=True,
+            error=payload["fatal"].strip().splitlines()[-1],
+        )
+
+    case_results = [
+        CaseResult(
+            name=c["name"],
+            passed=bool(c["passed"]),
+            runtime_ms=float(c["runtime_ms"]),
+            got=c.get("got", ""),
+            error=c.get("error"),
+        )
+        for c in payload["results"]
+    ]
+    return RunResult(candidate_id=candidate.id, case_results=case_results)
