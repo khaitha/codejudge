@@ -29,3 +29,25 @@ Task: two-sum
  3  buggy_offbyone         1/5     0.20   1.00   0.88   0.502
  4  crashes_indexerror     0/5     0.00   0.00   0.80   0.120
 
+Pairwise preferences (RLHF-style):
+  optimal_hashmap  >  brute_force   (delta 0.035)  - optimal_hashmap preferred over brute_force: stronger quality (+0.12); aggregate +0.035
+  optimal_hashmap  >  buggy_offbyone   (delta 0.246)  - optimal_hashmap preferred over buggy_offbyone: stronger correctness (+0.80); aggregate +0.246
+  optimal_hashmap  >  crashes_indexerror   (delta 0.628)  - optimal_hashmap preferred over crashes_indexerror: stronger correctness (+1.00); aggregate +0.628
+  ... and 3 more
+```
+
+---
+
+## Why this exists
+
+When you evaluate AI-generated code for a living, three questions recur for every
+candidate: *Does it actually work? Is it efficient? Is it clean enough to ship?*
+`codejudge` answers all three automatically and turns the answers into a ranking
+you can audit — every number traces back to a test result or an AST metric, and
+every preference comes with a one-line reason.
+
+It is intentionally small, dependency-light (one runtime dependency), and fully
+tested, so it is easy to read end to end and extend.
+
+## Features
+
