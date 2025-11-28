@@ -30,3 +30,42 @@ def test_wrong_answer_fails_without_crash():
     assert result.case_results[0].got == "6"
 
 
+def test_exception_in_candidate_is_caught():
+    task = _task(cases=[TestCase(name="c", args=[3], expected=9)])
+    cand = Candidate(id="boom", code="def solve(x):\n    raise ValueError('nope')\n")
+    result = run_candidate(task, cand)
+    assert result.n_passed == 0
+    assert result.case_results[0].error
+
+
+def test_missing_entrypoint_is_a_crash():
+    task = _task(entry="solve", cases=[TestCase(name="c", args=[1], expected=1)])
+    cand = Candidate(id="none", code="def other():\n    return 1\n")
+    result = run_candidate(task, cand)
+    assert result.crashed
+    assert result.n_passed == 0
+
+
+def test_compile_error_is_a_crash():
+    task = _task(cases=[TestCase(name="c", args=[1], expected=1)])
+    cand = Candidate(id="syntax", code="def solve(x):\n    return x +\n")
+    result = run_candidate(task, cand)
+    assert result.crashed
+
+
+def test_infinite_loop_times_out():
+    task = _task(cases=[TestCase(name="c", args=[1], expected=1)], time_limit_s=0.3)
+    cand = Candidate(id="loop", code="def solve(x):\n    while True:\n        pass\n")
+    result = run_candidate(task, cand)
+    assert result.crashed
+    assert "timed out" in (result.error or "").lower()
+
+
+def test_candidate_stdout_does_not_corrupt_results():
+    task = _task(cases=[TestCase(name="c", args=[2], expected=4)])
+    cand = Candidate(
+        id="noisy",
+        code="def solve(x):\n    print('chatty output')\n    return x * x\n",
+    )
+    result = run_candidate(task, cand)
+    assert result.n_passed == 1
