@@ -73,3 +73,40 @@ def analyze_quality(source: str) -> QualityMetrics:
         return QualityMetrics(
             loc=0,
             cyclomatic=0,
+            max_function_complexity=0,
+            has_docstring=False,
+            syntax_ok=True,
+            score=0.0,
+        )
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return QualityMetrics(
+            loc=loc,
+            cyclomatic=0,
+            max_function_complexity=0,
+            has_docstring=False,
+            syntax_ok=False,
+            score=0.0,
+        )
+
+    total_complexity = 1 + _branch_count(tree)
+
+    function_complexities: List[int] = []
+    has_docstring = ast.get_docstring(tree) is not None
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            function_complexities.append(1 + _branch_count(node))
+            if ast.get_docstring(node) is not None:
+                has_docstring = True
+
+    max_fn_complexity = max(function_complexities) if function_complexities else total_complexity
+    score = _quality_score(loc, max_fn_complexity, has_docstring)
+    return QualityMetrics(
+        loc=loc,
+        cyclomatic=total_complexity,
+        max_function_complexity=max_fn_complexity,
+        has_docstring=has_docstring,
+        syntax_ok=True,
+        score=score,
+    )
