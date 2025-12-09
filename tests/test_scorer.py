@@ -25,3 +25,30 @@ def test_branches_increase_complexity():
     assert not q.has_docstring
 
 
+def test_boolop_and_comprehension_count_as_branches():
+    code = "def f(xs):\n    return [x for x in xs if x and x > 0]\n"
+    q = analyze_quality(code)
+    # one comprehension `if` + one `and` -> base 1 + 2
+    assert q.max_function_complexity == 3
+
+
+def test_syntax_error_scores_zero():
+    q = analyze_quality("def f(:\n    pass")
+    assert not q.syntax_ok
+    assert q.score == 0.0
+
+
+def test_empty_or_comments_only_scores_zero():
+    assert analyze_quality("").score == 0.0
+    assert analyze_quality("   \n\n  ").score == 0.0
+    assert analyze_quality("# just a comment\n# another\n").score == 0.0
+
+
+def test_lower_complexity_scores_higher():
+    simple = analyze_quality('def f(x):\n    """doc"""\n    return x\n')
+    tangled = analyze_quality(
+        "def f(x):\n"
+        + "".join(f"    if x == {i}:\n        return {i}\n" for i in range(12))
+        + "    return -1\n"
+    )
+    assert simple.score > tangled.score
