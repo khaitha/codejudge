@@ -62,3 +62,30 @@ def _explain(winner: CandidateReport, loser: CandidateReport, margin: float) -> 
     )
 
 
+def _preferences(reports: List[CandidateReport]) -> List[Preference]:
+    """Full pairwise preferences implied by the ranking (winner ranks above loser)."""
+    prefs: List[Preference] = []
+    for i in range(len(reports)):
+        for j in range(i + 1, len(reports)):
+            winner, loser = reports[i], reports[j]
+            margin = winner.scores.aggregate - loser.scores.aggregate
+            prefs.append(
+                Preference(
+                    winner=winner.candidate_id,
+                    loser=loser.candidate_id,
+                    margin=margin,
+                    reason=_explain(winner, loser, margin),
+                )
+            )
+    return prefs
+
+
+def rank(
+    task: Task,
+    runs: List[RunResult],
+    qualities: Dict[str, QualityMetrics],
+) -> EvaluationReport:
+    """Score, rank, and derive preferences for all candidates of a task."""
+    weights = task.weights.normalized()
+    performance = _performance_scores(runs)
+
