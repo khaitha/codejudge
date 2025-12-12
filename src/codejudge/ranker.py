@@ -30,3 +30,35 @@ def _performance_scores(runs: List[RunResult]) -> Dict[str, float]:
     best: float = float("inf")
     for r in runs:
         if r.n_passed > 0:
+            best = min(best, r.passed_runtime_ms / r.n_passed)
+
+    scores: Dict[str, float] = {}
+    for r in runs:
+        if r.n_passed == 0 or best == float("inf"):
+            scores[r.candidate_id] = 0.0
+        else:
+            avg = r.passed_runtime_ms / r.n_passed
+            scores[r.candidate_id] = 1.0 if avg <= 0 else min(1.0, best / avg)
+    return scores
+
+
+def _explain(winner: CandidateReport, loser: CandidateReport, margin: float) -> str:
+    """One-line rationale naming the dimension the winner leads on most."""
+    diffs = {
+        "correctness": winner.scores.correctness - loser.scores.correctness,
+        "performance": winner.scores.performance - loser.scores.performance,
+        "quality": winner.scores.quality - loser.scores.quality,
+    }
+    dim = max(diffs, key=lambda k: diffs[k])
+    lead = diffs[dim]
+    if lead <= 1e-9:
+        return (
+            f"{winner.candidate_id} edges out {loser.candidate_id} on aggregate "
+            f"(+{margin:.3f}); dimensions near-identical"
+        )
+    return (
+        f"{winner.candidate_id} preferred over {loser.candidate_id}: stronger "
+        f"{dim} (+{lead:.2f}); aggregate +{margin:.3f}"
+    )
+
+
