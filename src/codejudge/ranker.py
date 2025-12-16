@@ -89,3 +89,40 @@ def rank(
     weights = task.weights.normalized()
     performance = _performance_scores(runs)
 
+    reports: List[CandidateReport] = []
+    for run in runs:
+        correctness = run.n_passed / run.n_total if run.n_total else 0.0
+        quality = qualities[run.candidate_id]
+        perf = performance[run.candidate_id]
+        aggregate = (
+            weights.correctness * correctness
+            + weights.performance * perf
+            + weights.quality * quality.score
+        )
+        reports.append(
+            CandidateReport(
+                candidate_id=run.candidate_id,
+                run=run,
+                quality=quality,
+                scores=ScoreBreakdown(
+                    correctness=correctness,
+                    performance=perf,
+                    quality=quality.score,
+                    aggregate=aggregate,
+                ),
+            )
+        )
+
+    # Sort by aggregate, breaking ties by correctness then performance.
+    reports.sort(
+        key=lambda cr: (cr.scores.aggregate, cr.scores.correctness, cr.scores.performance),
+        reverse=True,
+    )
+    for position, report in enumerate(reports, start=1):
+        report.rank = position
+
+    return EvaluationReport(
+        task_id=task.id,
+        reports=reports,
+        preferences=_preferences(reports),
+    )
