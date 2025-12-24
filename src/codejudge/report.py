@@ -32,3 +32,36 @@ def render_preferences(report: EvaluationReport, limit: Optional[int] = None) ->
     for p in prefs:
         lines.append(f"  {p.winner}  >  {p.loser}   (delta {p.margin:.3f})  - {p.reason}")
     if limit is not None and len(report.preferences) > limit:
+        lines.append(f"  ... and {len(report.preferences) - limit} more")
+    return "\n".join(lines)
+
+
+def to_markdown(report: EvaluationReport) -> str:
+    """A self-contained Markdown report suitable for a PR comment or gist."""
+    lines = [
+        f"# Evaluation report: `{report.task_id}`",
+        "",
+        "## Leaderboard",
+        "",
+        "| Rank | Candidate | Pass | Correctness | Performance | Quality | **Score** |",
+        "| ---: | --- | :---: | ---: | ---: | ---: | ---: |",
+    ]
+    for cr in report.reports:
+        passed = f"{cr.run.n_passed}/{cr.run.n_total}"
+        name = cr.candidate_id + (" ⚠️" if cr.run.crashed else "")
+        lines.append(
+            f"| {cr.rank} | `{name}` | {passed} | {cr.scores.correctness:.2f} | "
+            f"{cr.scores.performance:.2f} | {cr.scores.quality:.2f} | "
+            f"**{cr.scores.aggregate:.3f}** |"
+        )
+
+    lines += ["", "## Pairwise preferences", ""]
+    for p in report.preferences:
+        lines.append(f"- **{p.winner}** ≻ {p.loser} — {p.reason}")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def to_dict(report: EvaluationReport) -> Dict:
+    """A plain dict (JSON-serializable) of the entire report."""
+    return asdict(report)
