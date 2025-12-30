@@ -16,3 +16,8 @@ from .models import (
     EvaluationReport,
     Preference,
     ScoreBreakdown,
+    ScoreWeights,
+    Task,
+    TestCase,
+)
+
