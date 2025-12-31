@@ -51,3 +51,18 @@ tested, so it is easy to read end to end and extend.
 
 ## Features
 
+- **Sandboxed execution** — each candidate runs in its own `python -I` subprocess
+  with a wall-clock timeout; infinite loops, crashes, and stray `print`s can't
+  take down or corrupt the harness.
+- **Three-dimension scoring** — correctness (test pass rate), performance
+  (relative speed on passing cases), and static quality (AST complexity,
+  docstrings, brevity), combined with configurable weights.
+- **RLHF-style preferences** — full pairwise judgments with margins and rationales.
+- **Plain-text, Markdown, and JSON output** — drop the Markdown into a PR comment
+  or pipe the JSON into a dataset.
+- **Bring-your-own tasks** — a task is just a `task.yaml` plus a folder of `.py`
+  candidates. No code changes required.
+- **Zero-dependency core** — only `PyYAML` at runtime; `pytest` + `ruff` for dev.
+
+## Install
+
