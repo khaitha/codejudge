@@ -18,3 +18,10 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 dependencies = ["PyYAML>=5.4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.1"]
+
+[project.scripts]
+codejudge = "codejudge.cli:main"
+
