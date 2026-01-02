@@ -66,3 +66,23 @@ tested, so it is easy to read end to end and extend.
 
 ## Install
 
+```bash
+git clone https://github.com/khaitha/codejudge.git
+cd codejudge
+pip install -e ".[dev]"
+```
+
+Requires Python 3.9+.
+
+## Quickstart
+
+```bash
+# Evaluate a bundled example
+codejudge run examples/two_sum
+
+# Limit the preference list, and export machine-readable output
+codejudge run examples/two_sum --max-prefs 5 --json report.json --markdown report.md
+
+# Re-weight the dimensions (correctness, performance, quality)
+codejudge run examples/two_sum --weights 0.8,0.1,0.1
+
