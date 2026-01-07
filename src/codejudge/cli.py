@@ -37,3 +37,38 @@ def _run(args: argparse.Namespace) -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 
+    print(render_leaderboard(report))
+    print()
+    print(render_preferences(report, limit=args.max_prefs))
+
+    if args.json:
+        with open(args.json, "w", encoding="utf-8") as fh:
+            json.dump(to_dict(report), fh, indent=2)
+        print(f"\nWrote JSON report to {args.json}")
+    if args.markdown:
+        with open(args.markdown, "w", encoding="utf-8") as fh:
+            fh.write(to_markdown(report))
+        print(f"Wrote Markdown report to {args.markdown}")
+    return 0
+
+
+def _show(args: argparse.Namespace) -> int:
+    try:
+        task = load_task(args.task)
+        candidates = load_candidates(args.task)
+    except _USER_ERRORS as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    print(f"Task: {task.id}")
+    print(f"Entrypoint: {task.entrypoint}()   time limit: {task.time_limit_s}s")
+    print(
+        f"Weights: correctness={task.weights.correctness}, "
+        f"performance={task.weights.performance}, quality={task.weights.quality}"
+    )
+    print(f"Cases: {len(task.cases)}")
+    print(f"Candidates: {', '.join(c.id for c in candidates) or '(none)'}")
+    if task.prompt:
+        print(f"\nPrompt:\n{task.prompt}")
+    return 0
+
+
