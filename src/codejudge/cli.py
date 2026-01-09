@@ -72,3 +72,47 @@ def _show(args: argparse.Namespace) -> int:
     return 0
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="codejudge",
+        description="Evaluate, score, and rank competing AI-generated code solutions.",
+    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    run_parser = subparsers.add_parser(
+        "run", help="evaluate and rank candidate solutions for a task"
+    )
+    run_parser.add_argument("task", help="path to a task directory (containing task.yaml)")
+    run_parser.add_argument("--json", metavar="PATH", help="write the full report as JSON")
+    run_parser.add_argument("--markdown", metavar="PATH", help="write the report as Markdown")
+    run_parser.add_argument(
+        "--python", default=sys.executable, help="python interpreter used to run candidates"
+    )
+    run_parser.add_argument(
+        "--weights", help="override scoring weights as correctness,performance,quality"
+    )
+    run_parser.add_argument(
+        "--max-prefs",
+        dest="max_prefs",
+        type=int,
+        default=None,
+        help="limit how many pairwise preferences are printed",
+    )
+    run_parser.set_defaults(func=_run)
+
+    show_parser = subparsers.add_parser("show", help="show a task and its candidates")
+    show_parser.add_argument("task", help="path to a task directory (containing task.yaml)")
+    show_parser.set_defaults(func=_show)
+
+    return parser
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
