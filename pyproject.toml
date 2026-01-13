@@ -25,3 +25,14 @@ dev = ["pytest>=7", "ruff>=0.1"]
 [project.scripts]
 codejudge = "codejudge.cli:main"
 
+[project.urls]
+Homepage = "https://github.com/khaitha/codejudge"
+Issues = "https://github.com/khaitha/codejudge/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
