@@ -86,3 +86,20 @@ codejudge run examples/two_sum --max-prefs 5 --json report.json --markdown repor
 # Re-weight the dimensions (correctness, performance, quality)
 codejudge run examples/two_sum --weights 0.8,0.1,0.1
 
+# Inspect a task without running it
+codejudge show examples/two_sum
+```
+
+Use it as a library, too:
+
+```python
+from codejudge import evaluate_task
+
+report = evaluate_task("examples/two_sum")
+print(report.reports[0].candidate_id)        # 'optimal_hashmap'
+for pref in report.preferences:
+    print(pref.winner, "≻", pref.loser, "—", pref.reason)
+```
+
+## How it works
+
