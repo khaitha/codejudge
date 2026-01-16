@@ -25,3 +25,31 @@ def test_cli_run_writes_json(tmp_path):
     assert data["reports"][0]["rank"] == 1
 
 
+def test_cli_run_writes_markdown(tmp_path):
+    out_path = tmp_path / "report.md"
+    code = main(["run", EXAMPLE, "--markdown", str(out_path)])
+    assert code == 0
+    text = out_path.read_text()
+    assert "# Evaluation report" in text
+    assert "| Rank |" in text
+
+
+def test_cli_show(capsys):
+    code = main(["show", EXAMPLE])
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "two_sum()" in out
+    assert "Candidates:" in out
+
+
+def test_cli_bad_weights_returns_error(capsys):
+    code = main(["run", EXAMPLE, "--weights", "1,2"])
+    assert code == 2
+    assert "weights" in capsys.readouterr().err
+
+
+def test_cli_malformed_task_returns_error(capsys, tmp_path):
+    (tmp_path / "task.yaml").write_text("prompt: missing keys\n")
+    code = main(["run", str(tmp_path)])
+    assert code == 2
+    assert "error:" in capsys.readouterr().err
