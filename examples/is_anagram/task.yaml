@@ -1,0 +1,27 @@
+# Task definition for the codejudge harness.
+id: is-anagram
+prompt: |
+  Given two strings `s` and `t`, return True if `t` is an anagram of `s`
+  (same characters with the same multiplicities), and False otherwise.
+entrypoint: is_anagram
+time_limit_s: 1.0
+weights:
+  correctness: 0.6
+  performance: 0.2
+  quality: 0.2
+cases:
+  - name: simple_true
+    args: ["listen", "silent"]
+    expected: true
+  - name: simple_false
+    args: ["hello", "world"]
+    expected: false
+  - name: same_length_not_anagram
+    args: ["rat", "car"]
+    expected: false
+  - name: different_length
+    args: ["a", "ab"]
+    expected: false
+  - name: longer_true
+    args: ["anagram", "nagaram"]
+    expected: true
