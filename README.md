@@ -103,3 +103,23 @@ for pref in report.preferences:
 
 ## How it works
 
+```
+            ┌── load_task / load_candidates  (loader.py)
+            │
+ task.yaml ─┤   for each candidate:
+ candidates ┤     run_candidate ── python -I _worker.py  (runner.py + _worker.py)
+            │         │  isolated subprocess, JSON in/out, timeout
+            │     analyze_quality ── AST metrics           (scorer.py)
+            │
+            └── rank ── normalize → weight → sort → pairwise preferences (ranker.py)
+                          │
+                          └── render text / markdown / json (report.py)
+```
+
+Each stage is a pure, separately tested function; `evaluator.evaluate_task` wires
+them together.
+
+## Defining your own task
+
+Create a directory with a `task.yaml` and a `candidates/` folder:
+
