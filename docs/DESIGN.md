@@ -107,3 +107,61 @@ quickly producing wrong answers.
 > candidate well below the correct ones. A future version could score perf only
 > over the set of cases that *all* candidates passed.
 
+Wall-clock timing is also inherently noisy on shared CI runners; the bundled
+example includes one deliberately large case so the O(n) vs O(n²) gap dwarfs the
+noise.
+
+### Quality (`scorer.analyze_quality` + `scorer._quality_score`)
+
+A transparent static heuristic computed from the AST — no execution:
+
+```
+quality = 0.6 * complexity_sub + 0.2 * docstring_sub + 0.2 * brevity_sub
+
+complexity_sub = 1 / (1 + max(0, max_function_complexity - 1) / 8)
+docstring_sub  = 1.0 if a module/function docstring is present else 0.6
+brevity_sub    = 1 / (1 + max(0, logical_loc - 25) / 50)
+```
+
+`max_function_complexity` is an approximate cyclomatic complexity: a base path of
+1 plus one for each `if`/`for`/`while`/`with`/`except`/`assert`/ternary, plus the
+extra operands of each boolean `and`/`or`, plus each comprehension `if`.
+
+> **Known limitation.** Counting walks the whole function subtree, so a function
+> that nests an inner `def` includes the inner function's branches in its own
+> complexity (dedicated tools such as `radon` scope strictly per function). This
+> over-counts deeply nested helpers; it is a deliberate simplicity trade-off, not
+> a correctness claim.
+
+> **Known limitation.** This rewards *reviewability*, not correctness or taste. A
+> trivially short wrong answer can score well on quality alone — again, the reason
+> correctness carries the most weight by default. Quality is a tie-breaker and a
+> code-review signal, not a verdict.
+
+### Aggregation & preferences
+
+Candidates are sorted by aggregate, breaking ties by correctness then
+performance. Pairwise preferences are then the full `n choose 2` set implied by
+the ranking; each `Preference` records the winner, loser, score margin, and the
+single dimension on which the winner leads by the most.
+
+## Testing
+
+- `test_runner.py` — correctness, wrong answers, exceptions, missing entrypoint,
+  compile errors, timeouts, and stdout-isolation.
+- `test_scorer.py` — complexity counting, docstring detection, syntax errors.
+- `test_ranker.py` — ordering, performance normalization, preference generation.
+- `test_loader.py` — task/candidate loading and weight normalization.
+- `test_cli.py` — exit codes and text/JSON/Markdown output.
+- `test_end_to_end.py` — full pipeline on both bundled examples, including a
+  custom-weights scenario.
+
+CI runs the suite plus `ruff` on Python 3.9–3.12 and smoke-tests the CLI.
+
+## Possible extensions
+
+- Score performance over the common set of passed cases (see the perf caveat).
+- Pluggable quality backends (e.g. `ruff`/`radon`) behind the current heuristic.
+- Multi-language candidates by swapping the worker per language.
+- Bradley–Terry aggregation to turn pairwise preferences into a single rating.
+- A containerized worker for genuinely untrusted code.
