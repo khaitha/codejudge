@@ -123,3 +123,22 @@ them together.
 
 Create a directory with a `task.yaml` and a `candidates/` folder:
 
+```
+my_task/
+  task.yaml
+  candidates/
+    gpt.py
+    claude.py
+    human_baseline.py
+```
+
+```yaml
+# my_task/task.yaml
+id: reverse-words
+prompt: |
+  Given a string, reverse the order of the words.
+entrypoint: reverse_words        # the function each candidate must define
+time_limit_s: 2.0
+weights:
+  correctness: 0.6
+  performance: 0.25
