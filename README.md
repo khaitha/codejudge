@@ -142,3 +142,21 @@ time_limit_s: 2.0
 weights:
   correctness: 0.6
   performance: 0.25
+  quality: 0.15
+cases:
+  - name: basic
+    args: ["the sky is blue"]
+    expected: "blue is sky the"
+  - name: trailing_spaces
+    args: ["  hello world  "]
+    expected: "world hello"
+```
+
+Each candidate file defines the `entrypoint` function:
+
+```python
+# my_task/candidates/claude.py
+def reverse_words(s):
+    return " ".join(reversed(s.split()))
+```
+
