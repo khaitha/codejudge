@@ -160,3 +160,19 @@ def reverse_words(s):
     return " ".join(reversed(s.split()))
 ```
 
+Then `codejudge run my_task`.
+
+## Scoring at a glance
+
+| Dimension | Source | Range |
+| --- | --- | --- |
+| Correctness | fraction of test cases passed | 0–1 |
+| Performance | fastest passing candidate ÷ this candidate's avg time | 0–1 |
+| Quality | AST complexity + docstring + brevity heuristic | 0–1 |
+
+The aggregate is the weight-normalized sum. The full methodology, including the
+exact quality formula and the known limitations of each metric, is documented in
+[`docs/DESIGN.md`](docs/DESIGN.md).
+
+## Safety & limitations
+
