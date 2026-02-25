@@ -176,3 +176,22 @@ exact quality formula and the known limitations of each metric, is documented in
 
 ## Safety & limitations
 
+The runner provides **process isolation with a timeout**, not a security
+sandbox. Candidate code runs with your user's permissions and can touch the
+filesystem and network. Only evaluate code you are willing to run locally, or
+wrap the worker in a container/seccomp profile. See `docs/DESIGN.md` for the full
+threat model and a list of metric caveats (e.g. why a candidate that only passes
+the cheap cases can show a high `perf` score).
+
+## Development
+
+```bash
+make install   # editable install with dev tools
+make test      # pytest
+make lint      # ruff
+make run       # evaluate the two_sum example
+```
+
+## License
+
+MIT © Khai Tha — see [LICENSE](LICENSE).
