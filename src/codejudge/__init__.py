@@ -21,3 +21,15 @@ from .models import (
     TestCase,
 )
 
+__all__ = [
+    "__version__",
+    "evaluate_task",
+    "Candidate",
+    "CandidateReport",
+    "EvaluationReport",
+    "Preference",
+    "ScoreBreakdown",
+    "ScoreWeights",
+    "Task",
+    "TestCase",
+]
