@@ -36,3 +36,14 @@ where = ["src"]
 testpaths = ["tests"]
 addopts = "-q"
 
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"examples/**" = ["F"]
